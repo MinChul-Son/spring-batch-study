@@ -1,6 +1,8 @@
 package com.minchul.springbatchstudy.config;
 
+import java.util.Map;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -31,6 +33,18 @@ public class JobInstanceConfig {
     public Step step1() {
         return stepBuilderFactory.get("step1")
             .tasklet((contribution, chunkContext) -> {
+                JobParameters jobParameters = contribution.getStepExecution()
+                                                          .getJobExecution()
+                                                          .getJobParameters();
+
+                jobParameters.getString("name");
+                jobParameters.getLong("seq");
+                jobParameters.getDate("date");
+                jobParameters.getDouble("height");
+
+                Map<String, Object> parameters = chunkContext.getStepContext()
+                                                                 .getJobParameters();
+
                 log.info("step1");
                 return RepeatStatus.FINISHED;
             }).build();
