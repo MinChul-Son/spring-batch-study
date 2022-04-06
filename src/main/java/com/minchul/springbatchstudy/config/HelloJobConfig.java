@@ -40,8 +40,7 @@ public class HelloJobConfig {
         return stepBuilderFactory.get("helloStep2")
                                  .tasklet((contribution, chunkContext) -> {
                                      log.info("Hello Spring Batch - step2");
-                                     throw new RuntimeException("step2 has failed");
-//                                     return RepeatStatus.FINISHED;
+                                     return RepeatStatus.FINISHED;
                                  }).build();
     }
 }
