@@ -1,5 +1,6 @@
 package com.minchul.springbatchstudy.config;
 
+import com.minchul.springbatchstudy.CustomTasklet;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -23,6 +24,7 @@ public class HelloJobConfig {
         return jobBuilderFactory.get("helloJob")
                                 .start(helloStep1())
                                 .next(helloStep2())
+                                .next(helloStep3())
                                 .build();
     }
 
@@ -42,5 +44,12 @@ public class HelloJobConfig {
                                      log.info("Hello Spring Batch - step2");
                                      return RepeatStatus.FINISHED;
                                  }).build();
+    }
+
+    @Bean
+    public Step helloStep3() {
+        return stepBuilderFactory.get("helloStep3")
+                                 .tasklet(new CustomTasklet())
+                                 .build();
     }
 }
