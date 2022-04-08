@@ -5,6 +5,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,32 @@ public class HelloJobConfig {
         return stepBuilderFactory.get("helloStep2")
                                  .tasklet((contribution, chunkContext) -> {
                                      log.info("Hello Spring Batch - step2");
+
+                                     ExecutionContext jobExecutionContext = contribution.getStepExecution()
+                                                                                     .getJobExecution()
+                                                                                     .getExecutionContext();
+                                     ExecutionContext stepExecutionContext = contribution.getStepExecution()
+                                                                                     .getExecutionContext();
+
+                                     log.info("jobName: {}", jobExecutionContext.get("jobName"));
+                                     log.info("stepName: {}", stepExecutionContext.get("stepName"));
+
+                                     String jobName = chunkContext.getStepContext().getJobName();
+                                     String stepName = chunkContext.getStepContext()
+                                                                   .getStepExecution()
+                                                                   .getStepName();
+
+                                     if (jobExecutionContext.get("jobName") == null) {
+                                         jobExecutionContext.put("jobName", jobName);
+                                     }
+
+                                     if (stepExecutionContext.get("stepName") == null) {
+                                         stepExecutionContext.put("stepName", stepName);
+                                     }
+
+                                     log.info("jobName: {}", jobExecutionContext.get("jobName"));
+                                     log.info("stepName: {}", stepExecutionContext.get("stepName"));
+
                                      return RepeatStatus.FINISHED;
                                  }).build();
     }
