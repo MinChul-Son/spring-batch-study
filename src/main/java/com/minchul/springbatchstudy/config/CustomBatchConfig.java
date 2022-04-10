@@ -15,13 +15,6 @@ public class CustomBatchConfig extends BasicBatchConfigurer {
 
     private final DataSource dataSource;
 
-    /**
-     * Create a new {@link BasicBatchConfigurer} instance.
-     *
-     * @param properties                    the batch properties
-     * @param dataSource                    the underlying data source
-     * @param transactionManagerCustomizers transaction manager customizers (or {@code null})
-     */
     protected CustomBatchConfig(
         BatchProperties properties,
         DataSource dataSource,
