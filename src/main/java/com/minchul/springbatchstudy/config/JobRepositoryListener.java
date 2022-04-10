@@ -13,7 +13,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class JobRepositoryListener implements JobExecutionListener {
 
