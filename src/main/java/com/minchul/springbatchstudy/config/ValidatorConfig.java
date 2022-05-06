@@ -2,12 +2,14 @@ package com.minchul.springbatchstudy.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.builder.FlowBuilder;
-import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.job.DefaultJobParametersValidator;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,17 +17,17 @@ import org.springframework.context.annotation.Configuration;
 //@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class FlowJobConfig {
+public class ValidatorConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public Job flowJob() {
-        return jobBuilderFactory.get("flowJob")
-                                .start(flow())
+    public Job batchJob() {
+        return jobBuilderFactory.get("batchJob")
+                                .start(step1())
                                 .next(step2())
-                                .next(step3())
-                                .end()
+//            .validator(new CustomJobParameterValidator())
+            .validator(new DefaultJobParametersValidator(new String[]{"name", "date"}, new String[]{"count"}))
                                 .build();
     }
 
@@ -45,24 +47,5 @@ public class FlowJobConfig {
                                      log.info("Hello Spring Batch - step2");
                                      return RepeatStatus.FINISHED;
                                  }).build();
-    }
-
-    @Bean
-    public Step step3() {
-        return stepBuilderFactory.get("step3")
-                                 .tasklet((contribution, chunkContext) -> {
-                                     log.info("Hello Spring Batch - step3");
-                                     return RepeatStatus.FINISHED;
-                                 }).build();
-    }
-
-    @Bean
-    public Flow flow() {
-        FlowBuilder<Flow> flowBuilder = new FlowBuilder<>("flow");
-        flowBuilder.start(step2())
-                   .next(step3())
-                   .end();
-
-        return flowBuilder.build();
     }
 }
