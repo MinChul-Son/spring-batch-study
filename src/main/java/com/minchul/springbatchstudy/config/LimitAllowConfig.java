@@ -32,7 +32,9 @@ public class LimitAllowConfig {
                                  .tasklet((contribution, chunkContext) -> {
                                      log.info("Hello Spring Batch - step1");
                                      return RepeatStatus.FINISHED;
-                                 }).build();
+                                 })
+                                 .allowStartIfComplete(true)
+                                 .build();
     }
 
     @Bean
