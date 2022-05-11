@@ -12,7 +12,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class FlowJobConfig {
@@ -22,9 +22,12 @@ public class FlowJobConfig {
     @Bean
     public Job flowJob() {
         return jobBuilderFactory.get("flowJob")
-                                .start(flow())
-                                .next(step2())
-                                .next(step3())
+                                .start(step1())
+                                .on("COMPLETED")
+                                .to(step2())
+                                .from(step1())
+                                .on("FAILED")
+                                .to(step3())
                                 .end()
                                 .build();
     }
