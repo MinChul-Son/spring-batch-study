@@ -1,11 +1,7 @@
 package com.minchul.springbatchstudy.config;
 
-import com.minchul.springbatchstudy.CustomItemProcessor;
-import com.minchul.springbatchstudy.CustomItemReader;
 import com.minchul.springbatchstudy.CustomItemStreamReader;
 import com.minchul.springbatchstudy.CustomItemStreamWriter;
-import com.minchul.springbatchstudy.CustomItemWriter;
-import com.minchul.springbatchstudy.domain.Member;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +10,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
