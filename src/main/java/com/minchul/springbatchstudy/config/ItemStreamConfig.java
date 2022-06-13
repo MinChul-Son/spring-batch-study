@@ -1,30 +1,24 @@
 package com.minchul.springbatchstudy.config;
 
-import com.minchul.springbatchstudy.CustomItemProcessor;
-import com.minchul.springbatchstudy.CustomItemReader;
-import com.minchul.springbatchstudy.CustomItemWriter;
-import com.minchul.springbatchstudy.domain.Member;
+import com.minchul.springbatchstudy.CustomItemStreamReader;
+import com.minchul.springbatchstudy.CustomItemStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class ItemReaderProcessorWriterConfig {
+public class ItemStreamConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
@@ -39,27 +33,24 @@ public class ItemReaderProcessorWriterConfig {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                                 .<Member, Member>chunk(3)
+                                 .<String, String>chunk(5)
                                  .reader(itemReader())
-                                 .processor(itemProcessor())
                                  .writer(itemWriter())
                                  .build();
     }
 
-    @Bean
-    public ItemWriter<? super Member> itemWriter() {
-        return new CustomItemWriter();
+    private ItemWriter<? super String> itemWriter() {
+        return new CustomItemStreamWriter();
     }
 
     @Bean
-    public ItemProcessor<? super Member, Member> itemProcessor() {
-        return new CustomItemProcessor();
-    }
+    public CustomItemStreamReader itemReader() {
+        List<String> items = new ArrayList<>(10);
 
-
-    @Bean
-    public ItemReader<Member> itemReader() {
-        return new CustomItemReader(List.of(new Member("son"), new Member("kim"), new Member("lee")));
+        for (int i = 0; i < 10; i++) {
+            items.add(String.valueOf(i));
+        }
+        return new CustomItemStreamReader(items);
     }
 
     @Bean
