@@ -7,36 +7,40 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.transform.Range;
+import org.springframework.batch.item.json.JacksonJsonObjectReader;
+import org.springframework.batch.item.json.builder.JsonItemReaderBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class FlatFilesConfig {
+public class JsonConfig {
+
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public Job batchJob() {
+    public Job job() {
         return jobBuilderFactory.get("batchJob")
+                                .incrementer(new RunIdIncrementer())
                                 .start(step1())
-                                .next(step2())
                                 .build();
     }
 
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                                 .<String, String>chunk(5)
-                                 .reader(itemReader())
+                                 .<Customer, Customer>chunk(3)
+                                 .reader(customItemReader())
                                  .writer(items -> {
                                      log.info("items = {}", items);
                                  })
@@ -44,37 +48,11 @@ public class FlatFilesConfig {
     }
 
     @Bean
-    public ItemReader itemReader() {
-        FlatFileItemReader<Customer> itemReader = new FlatFileItemReader<>();
-        itemReader.setResource(new ClassPathResource("/customer.csv"));
-
-        DefaultLineMapper<Customer> lineMapper = new DefaultLineMapper<>();
-        lineMapper.setLineTokenizer(new DelimitedLineTokenizer());
-        lineMapper.setFieldSetMapper(new CustomerFieldSetMapper());
-
-        itemReader.setLineMapper(lineMapper);
-        itemReader.setLinesToSkip(1);
-
-        return itemReader;
-    }
-
-    @Bean
-    public ItemReader itemReader2() {
-        return new FlatFileItemReaderBuilder<Customer>()
-            .name("flatFile")
-            .resource(new ClassPathResource("/customer.csv"))
-            .fieldSetMapper(new BeanWrapperFieldSetMapper<>())
-            .targetType(Customer.class)
-            .linesToSkip(1)
-            .delimited().delimiter(",")
-            .names("name", "age", "year")
+    public ItemReader<? extends Customer> customItemReader() {
+        return new JsonItemReaderBuilder<Customer>()
+            .name("jsonReader")
+            .resource(new ClassPathResource("/customer.json"))
+            .jsonObjectReader(new JacksonJsonObjectReader<>(Customer.class))
             .build();
-    }
-
-    @Bean
-    public Step step2() {
-        return stepBuilderFactory.get("step2")
-                                 .tasklet((contribution, chunkContext) -> RepeatStatus.FINISHED)
-                                 .build();
     }
 }
