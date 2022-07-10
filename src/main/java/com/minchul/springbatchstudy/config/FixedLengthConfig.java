@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class FixedLengthConfig {
