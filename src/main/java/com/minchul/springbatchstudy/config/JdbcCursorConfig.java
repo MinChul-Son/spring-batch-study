@@ -1,6 +1,7 @@
 package com.minchul.springbatchstudy.config;
 
-import com.minchul.springbatchstudy.domain.Customer;
+import com.minchul.springbatchstudy.domain.Person;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -9,24 +10,18 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.transform.Range;
-import org.springframework.batch.item.json.JacksonJsonObjectReader;
-import org.springframework.batch.item.json.builder.JsonItemReaderBuilder;
-import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class JsonConfig {
+public class JdbcCursorConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final DataSource dataSource;
 
     @Bean
     public Job job() {
@@ -39,7 +34,7 @@ public class JsonConfig {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                                 .<Customer, Customer>chunk(3)
+                                 .<Person, Person>chunk(10)
                                  .reader(customItemReader())
                                  .writer(items -> {
                                      log.info("items = {}", items);
@@ -48,11 +43,14 @@ public class JsonConfig {
     }
 
     @Bean
-    public ItemReader<? extends Customer> customItemReader() {
-        return new JsonItemReaderBuilder<Customer>()
-            .name("jsonReader")
-            .resource(new ClassPathResource("/customer.json"))
-            .jsonObjectReader(new JacksonJsonObjectReader<>(Customer.class))
+    public ItemReader<Person> customItemReader() {
+        return new JdbcCursorItemReaderBuilder<Person>()
+            .name("jdbcCursorItemReader")
+            .fetchSize(10)
+            .sql("select id, firstName, lastName, birthDate from person where firstName like ? order by lastName, firstName")
+            .beanRowMapper(Person.class)
+            .queryArguments("A%")
+            .dataSource(dataSource)
             .build();
     }
 }
