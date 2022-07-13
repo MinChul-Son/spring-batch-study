@@ -1,7 +1,9 @@
 package com.minchul.springbatchstudy.config;
 
 import com.minchul.springbatchstudy.domain.Person;
-import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -10,18 +12,18 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 //@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class JdbcCursorConfig {
+public class JpaCursorConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final DataSource dataSource;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Bean
     public Job job() {
@@ -34,7 +36,7 @@ public class JdbcCursorConfig {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                                 .<Person, Person>chunk(10)
+                                 .<Person, Person>chunk(5)
                                  .reader(customItemReader())
                                  .writer(items -> {
                                      log.info("items = {}", items);
@@ -44,13 +46,14 @@ public class JdbcCursorConfig {
 
     @Bean
     public ItemReader<Person> customItemReader() {
-        return new JdbcCursorItemReaderBuilder<Person>()
-            .name("jdbcCursorItemReader")
-            .fetchSize(10)
-            .sql("select id, firstName, lastName, birthDate from person where firstName like ? order by lastName, firstName")
-            .beanRowMapper(Person.class)
-            .queryArguments("A%")
-            .dataSource(dataSource)
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("firstname", "A%");
+
+        return new JpaCursorItemReaderBuilder<Person>()
+            .name("jpaCursorItemReader")
+            .entityManagerFactory(entityManagerFactory)
+            .queryString("select p from Person p where firstName like :firstName")
+            .parameterValues(parameters)
             .build();
     }
 }

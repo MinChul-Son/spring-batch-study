@@ -1,7 +1,9 @@
 package com.minchul.springbatchstudy.config;
 
 import com.minchul.springbatchstudy.domain.Person;
-import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -10,21 +12,21 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class JdbcCursorConfig {
+public class JpaPagingConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final DataSource dataSource;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Bean
-    public Job job() {
+    public Job job() throws Exception {
         return jobBuilderFactory.get("batchJob")
                                 .incrementer(new RunIdIncrementer())
                                 .start(step1())
@@ -32,7 +34,7 @@ public class JdbcCursorConfig {
     }
 
     @Bean
-    public Step step1() {
+    public Step step1() throws Exception {
         return stepBuilderFactory.get("step1")
                                  .<Person, Person>chunk(10)
                                  .reader(customItemReader())
@@ -43,14 +45,16 @@ public class JdbcCursorConfig {
     }
 
     @Bean
-    public ItemReader<Person> customItemReader() {
-        return new JdbcCursorItemReaderBuilder<Person>()
-            .name("jdbcCursorItemReader")
-            .fetchSize(10)
-            .sql("select id, firstName, lastName, birthDate from person where firstName like ? order by lastName, firstName")
-            .beanRowMapper(Person.class)
-            .queryArguments("A%")
-            .dataSource(dataSource)
+    public ItemReader<Person> customItemReader() throws Exception {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("firstname", "A%");
+
+        return new JpaPagingItemReaderBuilder<Person>()
+            .name("jpaPagingItemReader")
+            .entityManagerFactory(entityManagerFactory)
+            .pageSize(10)
+            .queryString("select p from Person p where firstName = :firstName")
+            .parameterValues(parameters)
             .build();
     }
 }
