@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class JdbcPagingConfig {
