@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class FlatFilesFormattedConfig {
