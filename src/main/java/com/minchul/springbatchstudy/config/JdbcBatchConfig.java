@@ -1,7 +1,8 @@
 package com.minchul.springbatchstudy.config;
 
-import com.minchul.springbatchstudy.domain.Customer;
+import com.minchul.springbatchstudy.domain.CustomerV2;
 import java.util.List;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -11,20 +12,19 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 
-//@Configuration
+@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class FlatFilesFormattedConfig {
+public class JdbcBatchConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final DataSource dataSource;
 
     @Bean
     public Job job() {
@@ -37,30 +37,27 @@ public class FlatFilesFormattedConfig {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                                 .<Customer, Customer>chunk(10)
+                                 .<CustomerV2, CustomerV2>chunk(10)
                                  .reader(customItemReader())
                                  .writer(customItemWriter())
                                  .build();
     }
 
     @Bean
-    public ItemWriter<? super Customer> customItemWriter() {
-        return new FlatFileItemWriterBuilder<Customer>()
-            .name("flatFileWriter")
-            .append(true)
-            .resource(new ClassPathResource("customer.txt"))
-            .formatted()
-            .format("%-3s|%-2d|%-4s")
-            .names(new String[]{"name", "age", "year"})
+    public ItemWriter<? super CustomerV2> customItemWriter() {
+        return new JdbcBatchItemWriterBuilder<CustomerV2>()
+            .dataSource(dataSource)
+            .sql("insert into customer values (:id, :firstName, :lastName, :birthDate)")
+            .beanMapped()
             .build();
     }
 
     @Bean
-    public ItemReader<Customer> customItemReader() {
-        List<Customer> customers = List.of(new Customer("kim", 26, "1997"),
-            new Customer("lee", 25, "1998"), new Customer("son", 24, "1999"));
+    public ItemReader<CustomerV2> customItemReader() {
+        List<CustomerV2> customers = List.of(new CustomerV2(1L, "spring", "kim", "19970101"),
+            new CustomerV2(2L, "spring", "park", "19960101"), new CustomerV2(3L, "spring", "lee", "19950101"));
 
-        ListItemReader<Customer> reader = new ListItemReader<>(customers);
+        ListItemReader<CustomerV2> reader = new ListItemReader<>(customers);
 
         return reader;
     }

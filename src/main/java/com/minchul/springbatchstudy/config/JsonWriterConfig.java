@@ -12,6 +12,8 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
+import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +23,7 @@ import org.springframework.core.io.FileSystemResource;
 //@Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class FlatFilesFormattedConfig {
+public class JsonWriterConfig {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
@@ -45,13 +47,10 @@ public class FlatFilesFormattedConfig {
 
     @Bean
     public ItemWriter<? super Customer> customItemWriter() {
-        return new FlatFileItemWriterBuilder<Customer>()
-            .name("flatFileWriter")
-            .append(true)
-            .resource(new ClassPathResource("customer.txt"))
-            .formatted()
-            .format("%-3s|%-2d|%-4s")
-            .names(new String[]{"name", "age", "year"})
+        return new JsonFileItemWriterBuilder<Customer>()
+            .name("jsonFileWriter")
+            .jsonObjectMarshaller(new JacksonJsonObjectMarshaller<>())
+            .resource(new ClassPathResource("/customer.txt"))
             .build();
     }
 
