@@ -5,7 +5,7 @@ import com.minchul.springbatchstudy.domain.Person;
 import org.modelmapper.ModelMapper;
 import org.springframework.batch.item.ItemProcessor;
 
-public class CustomItemProcessor2 implements ItemProcessor<CustomerV2, Person> {
+public class CustomItemProcessorV2 implements ItemProcessor<CustomerV2, Person> {
 
     private ModelMapper modelMapper = new ModelMapper();
 

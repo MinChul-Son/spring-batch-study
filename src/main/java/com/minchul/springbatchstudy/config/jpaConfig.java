@@ -17,7 +17,6 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 //@Configuration
 @RequiredArgsConstructor
@@ -48,7 +47,7 @@ public class jpaConfig {
 
     @Bean
     public ItemProcessor<? super CustomerV2, ? extends Person> customItemProcessor() {
-        return new CustomItemProcessor2();
+        return new CustomItemProcessorV2();
     }
 
     @Bean
