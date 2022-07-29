@@ -10,6 +10,7 @@ public class CustomService {
     private int cnt = 0;
 
     public String doSomething() {
+        log.info("This is CustomService.doSomething()");
         return "item" + cnt++;
     }
 }
